@@ -7,7 +7,12 @@ from PIL import Image, ImageOps
 
 from ._colors import Palette
 from ._font import retrieve_glyph
-from .simulator import Simulator, SimulatorConfig
+
+HEADLESS_NO_SIMULATOR = False
+try:
+    from .simulator import Simulator, SimulatorConfig
+except ImportError:
+    HEADLESS_NO_SIMULATOR = True
 
 
 def clamp(value, minimum=0, maximum=255):
@@ -68,7 +73,7 @@ class Pixoo:
     __simulator = None
 
     def __init__(self, address, size=64, debug=False, refresh_connection_automatically=True, simulated=False,
-                 simulation_config=SimulatorConfig()):
+                simulation_config=None if HEADLESS_NO_SIMULATOR else SimulatorConfig()):
         assert size in [16, 32, 64], \
             'Invalid screen size in pixels given. ' \
             'Valid options are 16, 32, and 64'
@@ -97,7 +102,7 @@ class Pixoo:
 
         # We're going to need a simulator
         if self.simulated:
-            self.__simulator = Simulator(self, simulation_config)
+            self.__simulator = None if HEADLESS_NO_SIMULATOR else Simulator(self, simulation_config)
 
     def clear(self, rgb=Palette.BLACK):
         self.fill(rgb)
